@@ -1,5 +1,5 @@
 var balls = []
-  var tot_balls = 100
+  var tot_balls = 5
   var d = 5
   var block_col = 7
   var block_row = 3
@@ -13,16 +13,7 @@ var balls = []
   b_width = floor((width - (b_padding*block_col) - b_padding)/block_col);
   //Create Balls
   for (i = 0; i < tot_balls; i++) {
-    balls[i] = {
-    x: 
-    width/2 + (i * d * 2), 
-    y: 
-    height + (i * d * 2), 
-    dx: 
-    -3, 
-    dy: 
-    -3, 
-      //lead: false
+    balls[i] = [width/2 + (i * d * 2), height + (i * d * 2), -3, -3]
   };
 }
 //balls[0].lead = true;
@@ -46,7 +37,6 @@ var balls = []
 //    }
 //  }  
 //}
-}
 
 function draw() {
   background(51);
@@ -73,16 +63,17 @@ function draw_balls() {
   for (i = 0; i < balls.length; i++) {
     fill(255);
     strokeWeight(1);
-    ellipse(balls[i].x, balls[i].y, d, d);
+    ellipse(balls[i][0], balls[i][1], d, d);
   }
 }
 
 function move_balls() {
   for (i = balls.length - 1; i >= 0; i--) {
-    movex = balls[i].x + balls[i].dx;
-    movey = balls[i].y + balls[i].dy;
+    movex = balls[i][0] + balls[i][2];
+    movey = balls[i][1] + balls[i][3];
     //if (balls[i].lead) {
-    balls[i] = collision_wall(movex, movey, balls[i].dx, balls[i].dy);
+    balls[i] = collision_wall(movex, movey, balls[i][2], balls[i][3]);
+
     //    balls[i] = collision_blocks(movex, movey, balls[i].dx, balls[i].dy);
   }
   //} else {
@@ -107,17 +98,9 @@ function bounce(x, y, dx, dy, orient, axis) {
     }
     dy *= -1
   }
-  newball = {
-  x: 
-  x, 
-  y: 
-  y, 
-  dx: 
-  dx, 
-  dy: 
-  dy, 
+  newball = [ x, y, dx, dy]; 
     //lead: true,
-}
+
 return(newball)
   }
 
@@ -125,40 +108,33 @@ return(newball)
 function collision_wall(movex, movey, dx, dy) {
   newball = {} 
     if (movex < d/2) {
-    console.log("Bounce off Left");
+    //console.log("Bounce off Left");
     newball = bounce(movex, movey, dx, dy, 1, d/2);
     //if (balls[i + 1] !== void 0){ 
     //  balls[i + 1].lead = true
     //};
   } else if (movex > width - d/2) {
-    console.log("Bounce off Right");
+    //console.log("Bounce off Right");
     newball = bounce(movex, movey, dx, dy, 1, width - d/2);
     //if (balls[i + 1] !== void 0){ 
     //  balls[i + 1].lead = true
     //};
   } else if (movey < d/2) {
-    console.log("Bounce off Top");
+    //console.log("Bounce off Top");
     newball = bounce(movex, movey, dx, dy, 0, d/2);
     //if (balls[i + 1] !== void 0){ 
     //  balls[i + 1].lead = true
     //};
   } else if ((movey > height - 400) && (dy > 0)) {
     console.log("Break through Bottom");
-    newball = {};
+    newball = 0;
+    console.log(balls);
     //if (balls[i + 1] !== void 0){ 
     //  balls[i + 1].lead = true
     //};
-  } else newball = {
-  x: 
-  movex, 
-  y: 
-  movey, 
-  dx: 
-  dx, 
-  dy: 
-  dy, 
+  } else newball = [ movex, movey, dx, dy] 
     //lead: true,
-}
+
 //if (balls[i - 1] !== void 0) {
 //  if (newball.dx == balls[i - 1].dx && newball.dy == balls[i - 1].dy){
 //     newball.lead = false;

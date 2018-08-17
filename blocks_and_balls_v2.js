@@ -72,6 +72,9 @@ function move_balls() {
     movex = balls[i][0] + balls[i][2];
     movey = balls[i][1] + balls[i][3];
     //if (balls[i].lead) {
+      if (balls[i] = 0) { 
+      balls.splice(i, 1); 
+    }
     balls[i] = collision_wall(movex, movey, balls[i][2], balls[i][3]);
 
     //    balls[i] = collision_blocks(movex, movey, balls[i].dx, balls[i].dy);
@@ -128,6 +131,7 @@ function collision_wall(movex, movey, dx, dy) {
   } else if ((movey > height - 400) && (dy > 0)) {
     console.log("Break through Bottom");
     newball = 0;
+    console.log(newball)
     console.log(balls);
     //if (balls[i + 1] !== void 0){ 
     //  balls[i + 1].lead = true

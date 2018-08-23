@@ -1,7 +1,7 @@
-var balls = [];
-  var tot_balls = 100;
+  var balls = [];
+  var tot_balls = 200;
   var d = 5;
-  var block_col = 7;
+  var block_col = 8;
   var block_row = 3;
   var blocks = [];
   var b_width;
@@ -9,65 +9,72 @@ var balls = [];
   var frame = 0;
   var start_x = 200;
   var start_y = 270;
-  var start_dx = -2 ;
+  var start_dx = 1 ;
   var start_dy = -2 ;
-  var start_active = true;
   var start_lead = false;
 
-  function setup() {
+function setup() {
   createCanvas(400, 670);
-  b_width = floor((width - (b_padding*block_col) - b_padding)/block_col);
+  b_width = ((width - (b_padding * (block_col + 1)))/block_col);
+  
   //Create Balls
   for (i = 0; i < tot_balls; i++) {
     balls[i] = {
-    x: width/2 + (i * d * 2),
-    y: height + (i * d * 2),
-    dx: start_dx,
-    dy: start_dy,
-    active: start_active,
-    lead: start_lead,
-   }
-  };
-balls[0].lead = !balls[0].lead;
+      x: width/2 + (i * -start_dx * 2.5),
+      y: height + (i * -start_dy * 2.5),
+      dx: start_dx,
+      dy: start_dy,
+      lead: start_lead,
+     }
+    };
+  balls[0].lead = !balls[0].lead;
+
+
+//Create Blocks
+  for (i = 0; i < block_row; i++) {
+    blocks[i] = []
+    for (j = 0; j < block_col; j++) {
+      x = b_padding + (j * (b_width + b_padding));
+      y = b_padding + (i * (b_width + b_padding));
+      blocks[i][j] = {
+        num: 100,
+        x: x,
+        y: y,
+        _x: x + b_width,
+        _y: y + b_width,
+        exposed_T: false,
+        exposed_R: false,
+        exposed_B: false,
+        exposed_L: false,
+        }
+      if (i == block_row - 1){
+        blocks[i][j].exposed_B = true;
+      }
+    }
+  }
 }
-
-////Create Blocks
-//for (i = 0; i < block_row; i++) {
-//  blocks[i] = []
-//  for (j = 0; j < block_col; j++) {
-//    blocks[i][j] = {
-//    num: 100,
-//    x: j * (b_width + b_padding) + b_padding,
-//    y: i * (b_width + b_padding) + b_padding,
-//    TLx: j * (b_width + b_padding) + b_padding,
-//    TLy: i * (b_width + b_padding) + b_padding,
-//    TRx: j * (b_width + b_padding) + b_padding + b_width,
-//    TRy: i * (b_width + b_padding) + b_padding,
-//    BRx: j * (b_width + b_padding) + b_padding + b_width,
-//    BRy: i * (b_width + b_padding) + b_padding + b_width,
-//    BLx: j * (b_width + b_padding) + b_padding,
-//    BLy: i * (b_width + b_padding) + b_padding + b_width,
-
-//    }
-//  }  
-//}
 
 function draw() {
   background(51);
-  //draw_blocks();
+  draw_blocks();
   move_balls();
   draw_balls();
 }
 
 function draw_blocks() {
-  for (i = 0; i < blocks.length; i++) {
+   for (i = 0; i < blocks.length; i++) {
     for (j = 0; j < blocks[i].length; j++) {
-      fill(70);
-      strokeWeight(2);
-      rect(blocks[i][j].x, blocks[i][j].y, b_width, b_width);
-      textAlign(CENTER, CENTER);
-      fill(0);
-      text(blocks[i][j].num, blocks[i][j].x + b_width/2, blocks[i][j].y + b_width/2);
+      if (blocks[i][j].num > 0){
+        fill(70);
+        strokeWeight(2);
+        rect(blocks[i][j].x, blocks[i][j].y, b_width, b_width);
+        textAlign(CENTER, CENTER);
+        textSize(24)
+        if (blocks[i][j].num > 99) {textSize(18)}
+        fill(200);
+        text(blocks[i][j].num, blocks[i][j].x + b_width/2, blocks[i][j].y + b_width/2);
+        stroke(0)
+      }
     }
   }
 }
@@ -87,42 +94,123 @@ function move_balls() {
   for (i = balls.length - 1; i >= 0; i--) {
     movex = balls[i].x + balls[i].dx;
     movey = balls[i].y + balls[i].dy;
-    balls[i] = collision_wall(i, movex, movey, balls[i].dx, balls[i].dy, balls[i].active, balls[i].lead);
+    if (balls[i].lead == true) {
+      balls[i] = collision_wall(i, movex, movey, balls[i].dx, balls[i].dy, balls[i].lead);
+      balls[i] = collision_blocks(balls[i].x, balls[i].y, balls[i].dx, balls[i].dy, balls[i].lead);
+    } else {
+    balls[i].x = movex;
+    balls[i].y = movey;
+    }
   }
 }
 
-function collision_wall(i, movex, movey, dx, dy, active, lead) {
-  newball = {} 
+function collision_wall(i, movex, movey, dx, dy, lead) {
+  newball = {};
     if (movex < d/2) {
-    newball = bounce(movex, movey, dx, dy, 1, d/2, active, lead);
-    if (balls[i + 1] !== void 0){ 
-    };
+    newball = bounce(movex, movey, dx, dy, 1, d/2, lead);
   } else if (movex > width - d/2) {
-    newball = bounce(movex, movey, dx, dy, 1, width - d/2, active, lead);
-    if (balls[i + 1] !== void 0){ 
-    };
+    newball = bounce(movex, movey, dx, dy, 1, width - d/2, lead);
   } else if (movey < d/2) {
-    newball = bounce(movex, movey, dx, dy, 0, d/2, active, lead);
-    if (balls[i + 1] !== void 0){ 
-    };
+    newball = bounce(movex, movey, dx, dy, 0, d/2, lead);
   } else if ((movey > height - d/2) && (dy > 0)) {
     balls.splice(i,1);
-    if (balls[i + 1] != void 0) {
-      balls[i + 1].lead = true;
-    }
   } else newball = {
       x: movex, 
       y: movey, 
       dx: dx, 
       dy: dy, 
-      active: true,
       lead: lead
     }; 
 return(newball)
- }
+}
+
+
+function collision_blocks(movex, movey, dx, dy, lead){
+  newball = {
+  x: movex,
+  y: movey,
+  dx: dx,
+  dy: dy,
+  lead: lead  
+  }
+  for (k = 0; k < block_row; k++) {
+    for (j = 0; j < block_col; j++) {
+      if (blocks[k][j].num > 0) {
+        if (blocks[k][j].exposed_T ){
+          if (intersects(movex, movey, movex - dx, movey - dy, blocks[k][j].x, blocks[k][j]._y, blocks[k][j]._x, blocks[k][j]._y)){
+            newball = bounce(movex, movey, dx, dy, 0, blocks[k][j].y, lead);
+            console.log("Hit Top");
+            blocks[k][j].num--;
+          }
+        } 
+        if (blocks[k][j].exposed_R){
+          if (intersects(movex, movey, movex - dx, movey - dy, blocks[k][j]._x, blocks[k][j].y, blocks[k][j]._x, blocks[k][j]._y)){
+            newball = bounce(movex, movey, dx, dy, 1, blocks[k][j]._x, lead);
+            console.log("Hit Right");
+            blocks[k][j].num--;
+          }
+        }
+        if (blocks[k][j].exposed_B){
+          if (intersects(movex, movey, movex - dx, movey - dy, blocks[k][j]._x, blocks[k][j]._y, blocks[k][j].x, blocks[k][j]._y)){
+            newball = bounce(movex, movey, dx, dy, 0, blocks[k][j]._y, lead);
+            console.log("Hit Bottom");
+            blocks[k][j].num--;
+          }
+        }
+        if (blocks[k][j].exposed_L){
+          if (intersects(movex, movey, movex - dx, movey - dy, blocks[k][j].x, blocks[k][j]._y, blocks[k][j].x, blocks[k][j].y)){
+            newball = bounce(movex, movey, dx, dy, I, blocks[k][j].x, lead);
+            console.log("Hit Left");
+            blocks[k][j].num--;
+          }
+        }
+      }
+    }
+    console.log("K = ", k);
+    console.log("J = ", j);
+    if (blocks[k][j].num == 0) {
+      if (blocks[k - 1][j] != void 0) {
+        if (blocks[k - 1][j].num > 0) {
+          blocks[k - 1][j].exposed_B = true;
+        }
+      }
+      if (blocks[k][j + 1] != void 0) {
+        if (blocks[k][j + 1].num > 0) {
+          blocks[k][j + 1].exposed_L = true;
+        }
+      }
+      if (blocks[k + 1][j] != void 0) {
+        if (blocks[k + 1][j].num > 0) {
+          blocks[k + 1][j].exposed_T = true;
+        }
+      }
+      if (blocks[k][j - 1] != void 0) {
+        if (blocks[k][j - 1].num > 0) {
+          blocks[k][j - 1].exposed_R = true;
+        }
+      }
+      
+  
+
+
+
+
+
+
+
+
+
+
+
+
+}
+  }
+  return (newball);
+}
+
   
   
-function bounce(x, y, dx, dy, orient, axis, active, lead) {  
+function bounce(x, y, dx, dy, orient, axis, lead) {  
   if (orient == 1) {
     if (x > axis) {
       x = axis - (x - axis);
@@ -149,14 +237,10 @@ function bounce(x, y, dx, dy, orient, axis, active, lead) {
     y: y, 
     dx: dx,
     dy: dy,
-    active: active,
     lead: lead
   }; 
 return(newball)
 }
-
-
-
 
 function intersects(a, b, c, d, p, q, r, s) {
   var det, gamma, lambda;
@@ -169,36 +253,3 @@ function intersects(a, b, c, d, p, q, r, s) {
     return (0 < lambda && lambda < 1) && (0 < gamma && gamma < 1);
   }
 }
-
-//function collision_blocks(movex, movey, dx, dy){
-//  newball = {}
-//  for (i = 0; i < blocks.length; i++) {
-//    console.log("i = ", i);
-//    for (j = 0; j < blocks[i].length; j++) {
-//      console.log("j = ", j);
-//      b = blocks[i][j];
-//      console.log(b)
-//      if (b.x < movex && movex < b.TRx && b.y < movey && movey < b.BRy) {
-//      console.log("HIT!");
-//      }
-
-//      if (intersects(b.TRx, b.TRy, b.TLx, b.TLy, movex, movey, movex - dx, movey - dy)) {
-//        newball = bounce(movex, movey, dx, dy, 0, b.y);
-//      } else if (intersects(b.BLx, b.BLy, b.BRx, b.BRy, movex, movey, movex - dx, movey - dy)) {
-//        newball = bounce(movex, movey, dx, dy, 0, b.BRy);
-//      } else if (intersects(b.TRx, b.TRy, b.BRx, b.BRy, movex, movey, movex - dx, movey - dy)) {
-//        newball = bounce(movex, movey, dx, dy, 1, b.BRx);
-//      } else if (intersects(b.TLx, b.TLy, b.BLx, b.BLy, movex, movey, movex - dx, movey - dy)) {
-//        newball = bounce(movex, movey, dx, dy, 1, b.x);
-//      } else {
-//        newball = {
-//          x: movex, 
-//          y: movey, 
-//          dx: dx, 
-//          dy: dy,
-//        }
-//      }
-//    }
-//  }
-//  return(newball)
-//}

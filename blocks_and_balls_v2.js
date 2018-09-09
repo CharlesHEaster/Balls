@@ -1,18 +1,18 @@
   var balls = [];
-  var tot_balls = 10;
+  var tot_balls = 100;
   var d = 5;
   var block_col = 10;
   var block_row = 7;
   var blocks = [];
   var b_width;
   var b_padding = 0;
-  var start_x = 200;
-  var start_y = 270;
-  var start_dx = -5;
-  var start_dy = -2 ;
+  var start_x = 210;
+  var start_y = 500;
+  var start_dx = 0;
+  var start_dy = -3 ;
   var start_lead = false;
-  var spread = 2.5;
-  var start_num = 1;
+  var spread = 1;
+  var start_num = 6;
 
 function setup() {
   createCanvas(400, 670);
@@ -21,8 +21,8 @@ function setup() {
   //Create Balls
   for (i = 0; i < tot_balls; i++) {
     balls[i] = {
-      x: width/2 + (-i * start_dx * spread),
-      y: height + (-i * start_dy * spread),
+      x: start_x + (-i * start_dx * spread),
+      y: start_y + (-i * start_dy * spread),
       dx: start_dx,
       dy: start_dy,
       lead: start_lead,
@@ -164,30 +164,36 @@ function collision_blocks(movex, movey, dx, dy, lead){
   for (k = 0; k < block_row; k++) {
     for (j = 0; j < block_col; j++) {
       if (blocks[k][j].num > 0) {
-        if (blocks[k][j].exposed.T){
-          if (intersects(movex, movey, movex - dx, movey - dy, blocks[k][j].x, blocks[k][j]._y, blocks[k][j]._x, blocks[k][j]._y)){
-            newball = bounce(movex, movey, dx, dy, 0, blocks[k][j].y, lead);
-            blocks[k][j].num--;
-          }
-        } 
-        if (blocks[k][j].exposed.R){
-          if (intersects(movex, movey, movex - dx, movey - dy, blocks[k][j]._x, blocks[k][j].y, blocks[k][j]._x, blocks[k][j]._y)){
-            newball = bounce(movex, movey, dx, dy, 1, blocks[k][j]._x, lead);
-            blocks[k][j].num--;
-          }
-        } 
         if (blocks[k][j].exposed.B){
           if (intersects(movex, movey, movex - dx, movey - dy, blocks[k][j]._x, blocks[k][j]._y, blocks[k][j].x, blocks[k][j]._y)){
             newball = bounce(movex, movey, dx, dy, 0, blocks[k][j]._y, lead);
             blocks[k][j].num--;
           }
-        } 
-        if (blocks[k][j].exposed.L){
+        } else if (blocks[k][j].exposed.R){
+          if (intersects(movex, movey, movex - dx, movey - dy, blocks[k][j]._x, blocks[k][j].y, blocks[k][j]._x, blocks[k][j]._y)){
+            newball = bounce(movex, movey, dx, dy, 1, blocks[k][j]._x, lead);
+            blocks[k][j].num--;
+          }
+        } else if (blocks[k][j].exposed.L){
           if (intersects(movex, movey, movex - dx, movey - dy, blocks[k][j].x, blocks[k][j]._y, blocks[k][j].x, blocks[k][j].y)){
             newball = bounce(movex, movey, dx, dy, 1, blocks[k][j].x, lead);
             blocks[k][j].num--;
           }
-        } 
+        } else if (blocks[k][j].exposed.T){
+          if (intersects(movex, movey, movex - dx, movey - dy, blocks[k][j].x, blocks[k][j]._y, blocks[k][j]._x, blocks[k][j]._y)){
+            newball = bounce(movex, movey, dx, dy, 0, blocks[k][j].y, lead);
+            blocks[k][j].num--;
+          }
+        }
+        if (dist(balls[i].x, balls[i].y, blocks[k][j]._x, blocks[k][j]._y) < d/2 ){
+        console.log("hit bottom right corner");
+        } else if (dist(balls[i].x, balls[i].y, blocks[k][j].x, blocks[k][j]._y) < d/2 ){
+        console.log("hit bottom left corner");
+        } else if (dist(balls[i].x, balls[i].y, blocks[k][j].x, blocks[k][j].y) < d/2 ){
+        console.log("hit top left corner");
+        } else if (dist(balls[i].x, balls[i].y, blocks[k][j]._x, blocks[k][j].y) < d/2 ){
+        console.log("hit top right corner");
+        }
       }
     
     if (blocks[k][j].num == 0) {
@@ -242,6 +248,32 @@ function bounce(x, y, dx, dy, orient, axis, lead) {
 return(newball)
 }
 
+
+//Credit user meriton on StackOverflow
+function corner_bounce(x, y, dx, dy, orient, cornerx, cornery, lead){
+  var newx = x - cornerx;
+  var newy = y - cornery;
+  var c = -2 * (dx * newx + dy * newy)/(newx * newx + newy * newy);
+  dx += c * newx;
+  dy += c * newy;
+  x += dx;
+  y += dy;    
+  newball = {
+    x: x,
+    y: y, 
+    dx: dx,
+    dy: dy,
+    lead: lead
+  }; 
+return(newball)
+      
+}
+
+
+
+
+
+//Thank you dude from StackOverflow
 function intersects(a, b, c, d, p, q, r, s) {
   var det, gamma, lambda;
   det = (c - a) * (s - q) - (r - p) * (d - b);
@@ -250,6 +282,6 @@ function intersects(a, b, c, d, p, q, r, s) {
   } else {
     lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
     gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det;
-    return (0 < lambda && lambda < 1) && (0 < gamma && gamma < 1);
+    return (0 < lambda && lambda <= 1) && (0 < gamma && gamma <= 1);
   }
 }
